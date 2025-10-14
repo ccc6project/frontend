@@ -1,4 +1,3 @@
-// types/bank.ts - ARCHIVO NUEVO
 export interface Bank {
     bank_id: number;
     name: string;

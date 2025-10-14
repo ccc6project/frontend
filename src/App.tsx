@@ -1,9 +1,8 @@
-// App.tsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
-import ProtectedRoute from "./components/auth/ProtectedRoute"; // ← Importar
+import ProtectedRoute from "./components/auth/ProtectedRoute"; 
 
 function App() {
   return (
@@ -12,14 +11,7 @@ function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute> {/* ← Proteger esta ruta */}
-              <DashboardPage />
-            </ProtectedRoute>
-          } 
-        />
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /> </ProtectedRoute> }/>
       </Routes>
     </Router>
   );

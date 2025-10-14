@@ -28,9 +28,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const checkAuth = async () => {
       const storedToken = localStorage.getItem('token');
       if (storedToken) {
-        // Aquí podríamos verificar el token con el backend si es necesario
         setToken(storedToken);
-        // Por ahora solo cargamos el token, luego podemos hacer una verificación
       }
       setIsLoading(false);
     };
@@ -52,7 +50,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const register = async (userData: RegisterData) => {
     try {
       const newUser = await authAPI.register(userData);
-      // Después del registro, podríamos hacer login automático si quieres
       setUser(newUser);
     } catch (error) {
       throw error;
