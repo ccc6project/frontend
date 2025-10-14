@@ -54,7 +54,6 @@ const IssueCardForm: React.FC<IssueCardFormProps> = ({ onCardIssued, onCancel })
         setLoadingAccounts(false);
       }
     };
-
     loadBankAccounts();
   }, []);
 
@@ -79,13 +78,7 @@ const IssueCardForm: React.FC<IssueCardFormProps> = ({ onCardIssued, onCancel })
       (dueDate.getMonth() + 1).toString().padStart(2, '0') + 
       dueDate.getDate().toString().padStart(2, '0');
 
-    setFormData(prev => ({
-      ...prev,
-      expiration_date: expirationDateStr,
-      cut_date: cutDateStr,
-      due_date: dueDateStr
-    }));
-  }, []);
+    setFormData(prev => ({ ...prev, expiration_date: expirationDateStr, cut_date: cutDateStr, due_date: dueDateStr}));}, []);
 
   const handleAccountSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const accountId = Number(e.target.value);
@@ -103,17 +96,14 @@ const IssueCardForm: React.FC<IssueCardFormProps> = ({ onCardIssued, onCancel })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'credit_limit' || name === 'interest' ? Number(value) : value
-    }));
+    setFormData(prev => ({ ...prev,  [name]: name === 'limite de credito' || name === 'intereses' ? Number(value) : value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Enviando solicitud de tarjeta:', formData);
-    console.log('Cuenta bancaria seleccionada ID:', formData.bank_account_id);
+    // console.log('Enviando solicitud de tarjeta:', formData);
+    // console.log('Cuenta bancaria seleccionada ID:', formData.bank_account_id);
     
     if (!formData.cardholder_name.trim()) {
       setError('Por favor ingresa el nombre del titular');
@@ -173,7 +163,6 @@ const IssueCardForm: React.FC<IssueCardFormProps> = ({ onCardIssued, onCancel })
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mb-6">
           <div className="flex items-start">
-            <span className="text-red-500 mr-2">❌</span>
             <div>
               <p className="font-medium">{error}</p>
               {error.includes('No valid bank account') && (<p className="text-sm mt-1">Asegúrate de seleccionar una cuenta bancaria válida y que esté activa.</p>)}
@@ -186,14 +175,12 @@ const IssueCardForm: React.FC<IssueCardFormProps> = ({ onCardIssued, onCancel })
         <div>
           <h3 className="text-lg font-semibold text-blue-900 mb-4">Selecciona tu Cuenta Bancaria </h3>
           <p className="text-sm text-gray-600 mb-4"> Elige la cuenta bancaria que quieres vincular a tu nueva tarjeta AMEX </p>
-          
           {/* Dropdown de cuentas bancarias */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-blue-800 mb-2"> Cuenta Bancaria * </label>
             <select value={formData.bank_account_id} onChange={handleAccountSelect} className="w-full p-3 rounded-lg border border-blue-200 bg-white text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"  required>
               <option value={0}>Selecciona una cuenta bancaria</option>
-              {bankAccounts.map((account) => (
-                <option key={account.account_id} value={account.account_id}>
+              {bankAccounts.map((account) => ( <option key={account.account_id} value={account.account_id}>
                   {account.account_number} - {account.account_type} - Saldo: ${account.balance.toLocaleString()}
                 </option>
               ))}
@@ -309,8 +296,7 @@ const IssueCardForm: React.FC<IssueCardFormProps> = ({ onCardIssued, onCancel })
               💡 <strong>Importante:</strong> La aprobación de tu tarjeta AMEX está sujeta a 
               la verificación de tu cuenta bancaria vinculada y tu historial crediticio.
               Al hacer clic en "Aceptar Oferta", autorizas a American Express a verificar 
-              tu información y emitir tu tarjeta.
-            </p>
+              tu información y emitir tu tarjeta. </p>
           </div>
         </div>
       </div>

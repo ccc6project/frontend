@@ -4,16 +4,16 @@ import { cardsAPI, bankAPI } from '../../services/api';
 import type { BankAccountResponse } from '../../types/bank';
 import type { IssueCardRequest } from '../../types/card';
 import AddBankAccountForm from '../../components/dashboard/AddBankAccountForm';
-import { useAuth } from '../../contexts/AuthContext'; // ← Añadir esta importación
+import { useAuth } from '../../contexts/AuthContext';
 
 interface CardOfferProps { onOfferAccepted: () => void; onCancel: () => void; }
 
 interface GeneratedOffer {
   creditLimit: number;
   interestRate: number;
-  cutDate: string; // dd
-  dueDate: string; // dd
-  expirationDate: string; // yyyymm
+  cutDate: string; 
+  dueDate: string; 
+  expirationDate: string;
   cardType: string;
   annualFee: number;
   benefits: string[];
@@ -119,20 +119,13 @@ const CardOffer: React.FC<CardOfferProps> = ({ onOfferAccepted, onCancel }) => {
     }
   };
 
-  useEffect(() => {
-    loadBankAccounts();
-  }, []);
+  useEffect(() => { loadBankAccounts();}, []);
 
   // Función para cuando se agrega exitosamente una cuenta bancaria
-  const handleBankAccountAdded = () => {
-    setShowBankAccountForm(false);
-    loadBankAccounts();
-  };
+  const handleBankAccountAdded = () => { setShowBankAccountForm(false);  loadBankAccounts();};
 
   const handleAccountSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const accountId = Number(e.target.value);
-    setSelectedAccountId(accountId);
-  };
+    const accountId = Number(e.target.value);  setSelectedAccountId(accountId);};
 
   const handleAcceptOffer = async () => {
     setIsLoading(true);
@@ -155,14 +148,12 @@ const CardOffer: React.FC<CardOfferProps> = ({ onOfferAccepted, onCancel }) => {
         bank_account_id: selectedAccountId,
         amex: true,
         credit_limit: generatedOffer.creditLimit,
-        cut_date: generatedOffer.cutDate, // Solo día "dd"
-        due_date: generatedOffer.dueDate, // Solo día "dd"
+        cut_date: generatedOffer.cutDate, 
+        due_date: generatedOffer.dueDate, 
         interest: generatedOffer.interestRate,
-        expiration_date: generatedOffer.expirationDate, // "yyyymm"
+        expiration_date: generatedOffer.expirationDate,
         cardholder_name: userName
       };
-
-      console.log('ENVIANDO AL BACKEND:', requestData);
 
       await cardsAPI.issueCard(requestData);
       console.log('Tarjeta emitida exitosamente');
@@ -249,8 +240,7 @@ const CardOffer: React.FC<CardOfferProps> = ({ onOfferAccepted, onCancel }) => {
         <div className="text-center py-8">
           <div className="text-blue-900 font-medium">Generando tu oferta personalizada...</div>
         </div>
-      </div>
-    );
+      </div>);
   }
 
   // Oferta normal con cuentas disponibles
@@ -321,7 +311,6 @@ const CardOffer: React.FC<CardOfferProps> = ({ onOfferAccepted, onCancel }) => {
       </div>
 
       <p className="text-xs text-gray-500 text-center mt-4">Al aceptar, autorizas la verificación de tu información y la emisión de tu tarjeta American Express.</p>
-    </div>);
-};
+    </div>);};
 
 export default CardOffer;

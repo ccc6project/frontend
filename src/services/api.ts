@@ -97,11 +97,11 @@ async authorizePayment(authData: AuthorizationRequest): Promise<AuthorizationRes
     fecha_venc: authData.fecha_venc,
     num_seguridad: authData.num_seguridad,
     monto: authData.monto.toString(),
-    tienda: authData.tienda, // ← obligatorio
+    tienda: authData.tienda, 
     formato: authData.formato || 'JSON',
   });
 
-  const response = await fetch(`${API_BASE_URL}/authorization?${params.toString()}`, {
+  const response = await fetch(`${API_BASE_URL}/autorizacion?${params.toString()}`, {
     method: 'GET',
   });
 

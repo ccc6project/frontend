@@ -39,19 +39,18 @@ export interface IssueCardRequest {
   cardholder_name: string;
 }
 
-// TIPOS CORREGIDOS - Actualizar estos
 export interface Transaction {
-  transaction_id?: number; // ← Agregar este campo
-  id?: string; // ← Hacer opcional
+  transaction_id?: number; 
+  id?: string; 
   card_number: string;
   amount: number;
-  store?: string; // ← Hacer opcional
-  description?: string; // ← Agregar este campo
-  timestamp: string; // ← Cambiar 'date' por 'timestamp'
-  status: 'APPROVED' | 'DENIED' | 'PENDING' | 'INCOMPLETE'; // ← Agregar más estados
+  store?: string; 
+  description?: string; 
+  timestamp: string; 
+  status: 'APPROVED' | 'DENIED' | 'PENDING' | 'INCOMPLETE'; 
   type: 'PURCHASE' | 'PAYMENT';
-  source_account_id?: number; // ← Agregar este campo
-  authorization_id?: number; // ← Agregar este campo
+  source_account_id?: number; 
+  authorization_id?: number; 
 }
 
 export interface CreditCardPayment {
@@ -61,12 +60,12 @@ export interface CreditCardPayment {
 
 export interface Statement {
   card_number: string;
-  cardholder_name?: string; // ← Agregar este campo
+  cardholder_name?: string; 
   period: string;
   start_date: string;
   end_date: string;
-  credit_limit?: number; // ← Agregar este campo
-  available_credit?: number; // ← Agregar este campo
+  credit_limit?: number; 
+  available_credit?: number; 
   previous_balance: number;
   payments: number;
   purchases: number;

@@ -13,7 +13,7 @@ interface CardModalProps {
   formData: { amount: string; store: string };
   onClose: () => void;
   onChange: (field: string, value: string) => void;
-  onSubmit: (bankAccountId?: number) => void; // ← Cambiado para aceptar parámetro
+  onSubmit: (bankAccountId?: number) => void;
 }
 
 const formatCardNumber = (num: string) =>
@@ -30,7 +30,6 @@ const CardModal: React.FC<CardModalProps> = ({ modal, formData, onClose, onChang
         try {
           const data = await bankAPI.getUserBankAccounts();
           setAccounts(data);
-          // Seleccionar la primera cuenta por defecto
           if (data.length > 0) {
             setSelectedAccountId(data[0].account_id.toString());
           }
@@ -44,6 +43,8 @@ const CardModal: React.FC<CardModalProps> = ({ modal, formData, onClose, onChang
 
   if (!modal.type || !modal.card) return null;
 
+  // Calcular el saldo actual de la tarjeta
+  const currentBalance = modal.card.credit_limit - modal.card.available_credit;
   const amountNumber = parseFloat(formData.amount || '0');
 
   const canPay = () => {
@@ -54,21 +55,31 @@ const CardModal: React.FC<CardModalProps> = ({ modal, formData, onClose, onChang
     return amountNumber <= modal.card!.available_credit;
   };
 
+  // Función para pagar el saldo total
+  const payFullBalance = () => {
+    if (currentBalance > 0) {
+      onChange('amount', currentBalance.toString());
+    }
+  };
+
+  // Función para pagar el pago mínimo
+  const payMinimumPayment = () => {
+    // Asumiendo que el pago mínimo es el 5% del saldo actual o un monto fijo mínimo
+    const minimumPayment = Math.max(currentBalance * 0.05, 50);
+    onChange('amount', Math.min(minimumPayment, currentBalance).toString());
+  };
+
   const handleSubmit = () => {
     if (modal.type === 'pay-card' && selectedAccountId) {
-      // ✅ CORREGIDO: Pasar el bank_account_id seleccionado
       onSubmit(parseInt(selectedAccountId));
     } else {
-      onSubmit(); // Para compras, sin parámetro
+      onSubmit();
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      onClick={onClose}
-    >
-      <div
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div 
         className="w-full max-w-md mx-4 p-6 rounded-xl shadow-2xl"
         style={{ background: 'linear-gradient(135deg, #0A2540 0%, #3A6EA5 100%)' }}
         onClick={e => e.stopPropagation()}
@@ -76,7 +87,7 @@ const CardModal: React.FC<CardModalProps> = ({ modal, formData, onClose, onChang
         <h3 className="text-xl font-semibold mb-4 text-[#F0F4F8]">
           {modal.type === 'pay-card' ? 'Pagar Tarjeta' : 'Realizar Compra'}
         </h3>
-
+        
         <div className="mb-5 p-4 rounded-lg bg-white/10 backdrop-blur-sm">
           <div className="text-sm text-[#E1E8F0]">
             Tarjeta: {formatCardNumber(modal.card.card_number)}
@@ -84,22 +95,47 @@ const CardModal: React.FC<CardModalProps> = ({ modal, formData, onClose, onChang
           <div className="font-medium text-[#F0F4F8] mt-1">
             {modal.card.cardholder_name}
           </div>
+          {modal.type === 'pay-card' && (
+            <div className="mt-2 text-sm text-[#E1E8F0]">
+              <div>Saldo actual: <span className="font-semibold">${currentBalance.toLocaleString()}</span></div>
+              <div>Límite de crédito: <span className="font-semibold">${modal.card.credit_limit.toLocaleString()}</span></div>
+              <div>Disponible: <span className="font-semibold">${modal.card.available_credit.toLocaleString()}</span></div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1 text-[#E1E8F0]">
-              Monto
-            </label>
-            <input
-              type="number"
-              value={formData.amount}
-              onChange={e => onChange('amount', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7DA1C4] outline-none text-black"
-              placeholder="0.00"
-              step="0.01"
+            <label className="block text-sm font-medium mb-1 text-[#E1E8F0]">Monto</label>
+            <input 
+              type="number" 
+              value={formData.amount} 
+              onChange={e => onChange('amount', e.target.value)} 
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7DA1C4] outline-none text-black" 
+              placeholder="0.00" 
+              step="0.01" 
               min="0"
             />
+            
+            {/* Botones de pago rápido solo para pagos de tarjeta */}
+            {modal.type === 'pay-card' && currentBalance > 0 && (
+              <div className="flex gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={payMinimumPayment}
+                  className="flex-1 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  Pago Mínimo
+                </button>
+                <button
+                  type="button"
+                  onClick={payFullBalance}
+                  className="flex-1 px-3 py-1.5 text-xs bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                >
+                  Saldo Total
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Campo para seleccionar cuenta bancaria (solo en pagos) */}
@@ -108,9 +144,9 @@ const CardModal: React.FC<CardModalProps> = ({ modal, formData, onClose, onChang
               <label className="block text-sm font-medium mb-1 text-[#E1E8F0]">
                 Cuenta Bancaria para Pagar
               </label>
-              <select
-                value={selectedAccountId}
-                onChange={(e) => setSelectedAccountId(e.target.value)}
+              <select 
+                value={selectedAccountId} 
+                onChange={(e) => setSelectedAccountId(e.target.value)} 
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7DA1C4] outline-none text-black"
               >
                 <option value="">Seleccionar cuenta</option>
@@ -134,10 +170,10 @@ const CardModal: React.FC<CardModalProps> = ({ modal, formData, onClose, onChang
               <label className="block text-sm font-medium mb-1 text-[#E1E8F0]">
                 Nombre de la Tienda
               </label>
-              <input
-                type="text"
-                value={formData.store}
-                onChange={e => onChange('store', e.target.value)}
+              <input 
+                type="text" 
+                value={formData.store} 
+                onChange={e => onChange('store', e.target.value)} 
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7DA1C4] outline-none text-black"
                 placeholder="Ej: Amazon, Walmart, etc."
               />
@@ -145,6 +181,7 @@ const CardModal: React.FC<CardModalProps> = ({ modal, formData, onClose, onChang
           )}
 
           {error && <div className="text-red-500 text-sm">{error}</div>}
+          
           {modal.type === 'pay-card' && amountNumber > 0 && !canPay() && (
             <div className="text-red-500 text-sm">
               La cuenta seleccionada no tiene suficiente saldo para pagar esta tarjeta
@@ -152,18 +189,21 @@ const CardModal: React.FC<CardModalProps> = ({ modal, formData, onClose, onChang
           )}
 
           <div className="flex gap-2 pt-2">
-            <button
+            <button 
               onClick={onClose}
               className="flex-1 px-4 py-2 border border-[#E1E8F0] rounded-lg text-[#F0F4F8] hover:bg-white/10 transition"
             >
               Cancelar
             </button>
-            <button
-              onClick={handleSubmit}
-              disabled={!formData.amount || !canPay() || (modal.type === 'payment' && !formData.store) || (modal.type === 'pay-card' && !selectedAccountId)}
-              className="flex-1 px-4 py-2 rounded-lg text-white font-semibold shadow-md transition
-                         disabled:bg-gray-400
-                         bg-gradient-to-r from-[#0A2540] to-[#1E3C72] hover:opacity-90"
+            <button 
+              onClick={handleSubmit} 
+              disabled={
+                !formData.amount || 
+                !canPay() || 
+                (modal.type === 'payment' && !formData.store) || 
+                (modal.type === 'pay-card' && !selectedAccountId)
+              }
+              className="flex-1 px-4 py-2 rounded-lg text-white font-semibold shadow-md transition disabled:bg-gray-400 bg-gradient-to-r from-[#0A2540] to-[#1E3C72] hover:opacity-90"
             >
               Confirmar
             </button>

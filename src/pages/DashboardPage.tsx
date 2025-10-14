@@ -10,8 +10,6 @@ import { cardsAPI, bankAPI } from '../services/api';
 import type { Card } from '../types/card';
 import type { BankAccountResponse } from '../types/bank';
 
-// Interfaz local para compatibilidad con AuthorizationForm
-interface DashboardCard { number: string; name: string; limit: number; available: number; expiration?: string; security_code?: string; }
 
 const DashboardPage: React.FC = () => {
   const { user, logout } = useAuth();
@@ -24,7 +22,7 @@ const DashboardPage: React.FC = () => {
   const [showDepositForm, setShowDepositForm] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<BankAccountResponse | null>(null);
   
-  // ✅ NUEVO: Estado para forzar recarga de cuentas bancarias
+  // Estado para forzar recarga de cuentas bancarias
   const [refreshBankAccounts, setRefreshBankAccounts] = useState(0);
 
   // Función para recargar tarjetas
@@ -33,15 +31,6 @@ const DashboardPage: React.FC = () => {
       const userCards = await cardsAPI.getUserCards();
       setCards(userCards);
 
-      // Convertir las tarjetas al formato que espera el dashboard
-      const convertedCards: DashboardCard[] = userCards.map(card => ({
-        number: card.card_number,
-        name: card.cardholder_name,
-        limit: card.credit_limit,
-        available: card.available_credit,
-        expiration: card.expiration_date,
-        security_code: card.security_code
-      }));
     } catch (error: any) {
       console.error('Error cargando tarjetas:', error);
     } finally {
@@ -63,17 +52,11 @@ const DashboardPage: React.FC = () => {
   };
 
   // Cargar datos al montar el componente
-  useEffect(() => { 
-    loadCards(); 
-    loadBankAccounts(); 
-  }, []);
+  useEffect(() => { loadCards();  loadBankAccounts(); }, []);
 
-  // ✅ NUEVO: Recargar cuentas bancarias cuando cambie refreshBankAccounts
+  // Recargar cuentas bancarias cuando cambie refreshBankAccounts
   useEffect(() => {
-    if (refreshBankAccounts > 0) {
-      loadBankAccounts();
-    }
-  }, [refreshBankAccounts]);
+    if (refreshBankAccounts > 0) {loadBankAccounts(); }}, [refreshBankAccounts]);
 
   // Función para cuando se emite una tarjeta
   const handleCardIssued = () => { 
@@ -104,7 +87,7 @@ const DashboardPage: React.FC = () => {
       prev.map(acc => acc.account_id === updatedAccount.account_id ? updatedAccount : acc));
   };
 
-  // ✅ NUEVO: Callback para actualizar cuentas bancarias desde CardList
+  // Callback para actualizar cuentas bancarias desde CardList
   const handleBankAccountUpdate = () => {
     setRefreshBankAccounts(prev => prev + 1);
   };
@@ -131,14 +114,8 @@ const DashboardPage: React.FC = () => {
       {/* Modal para hacer depósito */}
       {showDepositForm && selectedAccount && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <DepositForm 
-            account={selectedAccount} 
-            onDepositSuccess={handleDepositSuccess} 
-            onCancel={() => {
-              setShowDepositForm(false); 
-              setSelectedAccount(null);
-            }} 
-          />
+          <DepositForm  account={selectedAccount}  onDepositSuccess={handleDepositSuccess} 
+            onCancel={() => { setShowDepositForm(false);  setSelectedAccount(null); }}  />
         </div>
       )}
 
@@ -163,42 +140,40 @@ const DashboardPage: React.FC = () => {
                 </div>
               </div>
               <div className="flex gap-2">
-                <button 
-                  onClick={() => setShowBankAccountForm(true)} 
-                  className="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-4 py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl border border-gray-600 flex items-center gap-1"
-                >
+                <button onClick={() => setShowBankAccountForm(true)}  className="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-4 py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl border border-gray-600 flex items-center gap-1">
                   <span className="text-lg">+</span> <span>Cuenta Bancaria</span>
                 </button>
-                <button 
-                  onClick={handleLogout} 
-                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-all duration-200 font-semibold border border-gray-600 hover:border-red-500 text-sm"
-                >
+                <button onClick={handleLogout} className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-all duration-200 font-semibold border border-gray-600 hover:border-red-500 text-sm">
                   Cerrar Sesión
                 </button>
               </div>
             </div>
           </div>
         </header>
-
+        {/* Botones de acción */}
+            <div className="flex flex-wrap gap-4 justify-center mt-2">
+              <button onClick={() => setShowCardOffer(true)} 
+              className="bg-gradient-to-br from-gray-950 via-slate-900 to-black text-white px-4 py-2 rounded-xl hover:from-gray-900 hover:via-slate-800 hover:to-gray-900 transition-all duration-300 font-semibold shadow-2xl hover:shadow-blue-900/50 border border-blue-900/50 hover:border-blue-700/50 flex items-center gap-3 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <span className="text-xl font-bold relative z-6">+</span>
+                <span className="relative z-10">Solicitar Otra Tarjeta</span>
+              </button>
+              <button onClick={() => setShowBankAccountForm(true)}
+                className="bg-gradient-to-br from-gray-950 via-slate-900 to-black text-white px-4 py-2 rounded-xl hover:from-gray-900 hover:via-slate-800 hover:to-gray-900 transition-all duration-300 font-semibold shadow-2xl hover:shadow-blue-900/50 border border-blue-900/50 hover:border-blue-700/50 flex items-center gap-3 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <span className="text-xl font-bold relative z-10">+</span>
+                <span className="relative z-6">Agregar Cuenta Bancaria</span>
+              </button>
+            </div>
         {/* Mostrar oferta de tarjeta o dashboard normal */}
         {showCardOffer ? (
-          <CardOffer 
-            onOfferAccepted={handleCardIssued} 
-            onCancel={() => { 
-              setShowCardOffer(false); 
-              loadBankAccounts();
-            }} 
-          />
-        ) : cards.length === 0 ? (
+          <CardOffer onOfferAccepted={handleCardIssued}  onCancel={() => { setShowCardOffer(false); loadBankAccounts(); }} /> ) : cards.length === 0 ? (
           <div className="space-y-8">
             {/* Sección cuando no hay tarjetas */}
             <div className="bg-white rounded-xl shadow-lg p-10 text-center">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">No tienes tarjetas aún</h2>
               <p className="text-blue-900 mb-6">American Express tiene una oferta pre-aprobada para ti</p>
-              <button 
-                onClick={() => setShowCardOffer(true)} 
-                className="bg-gradient-to-r from-gray-600 to-gray-900 text-white px-6 py-3 rounded-lg hover:from-gray-900 hover:to-gray-700 transition-colors"
-              >
+              <button onClick={() => setShowCardOffer(true)}  className="bg-gradient-to-r from-gray-600 to-gray-900 text-white px-6 py-3 rounded-lg hover:from-gray-900 hover:to-gray-700 transition-colors">
                 Ver Oferta Pre-Aprobada
               </button>
             </div>
@@ -210,24 +185,15 @@ const DashboardPage: React.FC = () => {
                 <div className="text-center py-4">
                   <div className="text-blue-900">Cargando cuentas...</div>
                 </div>
-              </div>
-            ) : (
-              <BankAccountList 
-                accounts={bankAccounts} 
-                onDepositClick={handleDepositClick} 
-              />
-            )}
+              </div> ) : (<BankAccountList accounts={bankAccounts}  onDepositClick={handleDepositClick}  />  )}
           </div>
         ) : (
           <>
             {/* Grid Principal - Cuando SÍ hay tarjetas */}
             <div className="flex flex-col lg:flex-row gap-6 mb-6">
               <div className="lg:w-[65%]">
-                {/* ✅ ACTUALIZADO: Pasar el callback onBankAccountUpdate */}
-                <CardList 
-                  onCardUpdate={loadCards} 
-                  onBankAccountUpdate={handleBankAccountUpdate} 
-                />
+                {/*Pasar el callback onBankAccountUpdate */}
+                <CardList onCardUpdate={loadCards} onBankAccountUpdate={handleBankAccountUpdate} />
               </div>
               <div className="lg:w-[35%] space-y-6">
                 {/* Lista de cuentas bancarias */}
@@ -237,37 +203,12 @@ const DashboardPage: React.FC = () => {
                     <div className="text-center py-4">
                       <div className="text-blue-900">Cargando cuentas...</div>
                     </div>
-                  </div>
-                ) : (
-                  <BankAccountList 
-                    accounts={bankAccounts} 
-                    onDepositClick={handleDepositClick} 
-                  />
-                )}
+                  </div> ) : (<BankAccountList accounts={bankAccounts}   onDepositClick={handleDepositClick} />)}
               </div>
             </div>
 
-            {/* Botones de acción */}
-            <div className="flex flex-wrap gap-4 justify-center mt-2">
-              <button 
-                onClick={() => setShowCardOffer(true)}
-                className="bg-gradient-to-br from-gray-950 via-slate-900 to-black text-white px-4 py-2 rounded-xl hover:from-gray-900 hover:via-slate-800 hover:to-gray-900 transition-all duration-300 font-semibold shadow-2xl hover:shadow-blue-900/50 border border-blue-900/50 hover:border-blue-700/50 flex items-center gap-3 group relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <span className="text-xl font-bold relative z-6">+</span>
-                <span className="relative z-10">Solicitar Otra Tarjeta</span>
-              </button>
-              <button 
-                onClick={() => setShowBankAccountForm(true)}
-                className="bg-gradient-to-br from-gray-950 via-slate-900 to-black text-white px-4 py-2 rounded-xl hover:from-gray-900 hover:via-slate-800 hover:to-gray-900 transition-all duration-300 font-semibold shadow-2xl hover:shadow-blue-900/50 border border-blue-900/50 hover:border-blue-700/50 flex items-center gap-3 group relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <span className="text-xl font-bold relative z-10">+</span>
-                <span className="relative z-6">Agregar Cuenta Bancaria</span>
-              </button>
-            </div>
-          </>
-        )}
+            
+          </> )}
       </div>
     </>
   );
